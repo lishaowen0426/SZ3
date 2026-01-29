@@ -244,6 +244,8 @@ class Config {
                     l2normErrorBound = std::stod(value);
                 else if (eq(key, "OpenMP"))
                     openmp = parse_bool(value);
+                else if (eq(key, "ForceLossy"))
+                    forceLossy = parse_bool(value);
             } else if (eq(section, "AlgoSettings")) {
                 if (eq(key, "Lorenzo"))
                     lorenzo = parse_bool(value);
@@ -287,6 +289,7 @@ class Config {
         ss << "PSNRErrorBound = " << psnrErrorBound << "\n";
         ss << "L2NormErrorBound = " << l2normErrorBound << "\n";
         ss << "OpenMP = " << (openmp ? "true" : "false") << "\n";
+        ss << "ForceLossy = " << (forceLossy ? "true" : "false") << "\n";
 
         ss << "\n[AlgoSettings]\n";
         ss << "Lorenzo = " << (lorenzo ? "true" : "false") << "\n";
@@ -340,7 +343,7 @@ class Config {
         }
 
         uint8_t boolvals = (lorenzo & 1) << 7 | (lorenzo2 & 1) << 6 | (regression & 1) << 5 | (regression2 & 1) << 4 |
-                           (openmp & 1) << 3;
+                           (openmp & 1) << 3 | (forceLossy & 1) << 2;
         write(boolvals, c);
 
         write(dataType, c);
@@ -397,6 +400,7 @@ class Config {
             regression = (boolvals >> 5) & 1;
             regression2 = (boolvals >> 4) & 1;
             openmp = (boolvals >> 3) & 1;
+            forceLossy = (boolvals >> 2) & 1;
         }
         if (c < c1) {
             read(dataType, c);
@@ -456,6 +460,7 @@ class Config {
     double psnrErrorBound = 0.0;             ///< PSNR error bound
     double l2normErrorBound = 0.0;           ///< L2 norm error bound
     bool openmp = false;                     ///< Use OpenMP for parallel processing
+    bool forceLossy = false;                 ///< Force lossy compression (disable lossless fallback)
 
     /**
      * @brief Algorithm-specific settings.
