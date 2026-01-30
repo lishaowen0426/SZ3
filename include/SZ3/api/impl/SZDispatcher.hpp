@@ -1,10 +1,12 @@
 #ifndef SZ3_IMPL_SZDISPATCHER_HPP
 #define SZ3_IMPL_SZDISPATCHER_HPP
 
+#include <iostream>
+
+#include "SZ3/api/impl/SZAlgoBioMD.hpp"
 #include "SZ3/api/impl/SZAlgoInterp.hpp"
 #include "SZ3/api/impl/SZAlgoLorenzoReg.hpp"
 #include "SZ3/api/impl/SZAlgoNopred.hpp"
-#include "SZ3/api/impl/SZAlgoBioMD.hpp"
 #include "SZ3/utils/Config.hpp"
 #include "SZ3/utils/Statistic.hpp"
 
@@ -44,7 +46,11 @@ size_t SZ_compress_dispatcher(Config &conf, const T *data, uchar *cmpData, size_
         } catch (std::length_error &e) {
             if (std::string(e.what()) == SZ3_ERROR_COMP_BUFFER_NOT_LARGE_ENOUGH) {
                 isCmpCapSufficient = false;
-                // printf("SZ is downgraded to lossless mode because the buffer for compressed data is not large enough.\n");
+                if (conf.forceLossy) {
+                    throw;
+                }
+                // printf("SZ is downgraded to lossless mode because the buffer for compressed data is not large
+                // enough.\n");
             } else {
                 throw;
             }
@@ -53,13 +59,19 @@ size_t SZ_compress_dispatcher(Config &conf, const T *data, uchar *cmpData, size_
 
     // do lossless only compression if 1) cmpr algorithm is lossless or 2) compressed buffer not large enough for lossy
     if (conf.cmprAlgo == ALGO_LOSSLESS || !isCmpCapSufficient) {
+        if (conf.forceLossy) {
+            // std::cout << "cmprAlgo=" << static_cast<int>(conf.cmprAlgo) << " isCmpCap=" << std::boolalpha
+            //          << isCmpCapSufficient << "\n";
+
+            throw std::runtime_error("Lossless fallback is disabled (forceLossy=true)");
+        }
         conf.cmprAlgo = ALGO_LOSSLESS;
         auto zstd = Lossless_zstd();
         return zstd.compress(reinterpret_cast<const uchar *>(data), conf.num * sizeof(T), cmpData, cmpCap);
     }
 
     // if lossy compression ratio < 3, test if lossless only mode has a better ratio than lossy
-    if (conf.num * sizeof(T) / 1.0 / cmpSize < 3) {
+    if (!conf.forceLossy && conf.num * sizeof(T) / 1.0 / cmpSize < 3) {
         auto zstd = Lossless_zstd();
         auto zstdCmpCap = ZSTD_compressBound(conf.num * sizeof(T)) + sizeof(size_t);
         auto zstdCmpData = static_cast<uchar *>(malloc(zstdCmpCap));
