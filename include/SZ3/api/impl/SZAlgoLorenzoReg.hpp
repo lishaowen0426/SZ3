@@ -2,6 +2,7 @@
 #define SZ3_SZALGO_LORENZO_REG_HPP
 
 #include <cmath>
+#include <cstdio>
 #include <memory>
 
 #include "SZ3/compressor/SZGenericCompressor.hpp"
@@ -32,6 +33,7 @@ std::shared_ptr<concepts::CompressorInterface<T>> make_compressor_lorenzo_regres
     }
     if (conf.lorenzo) {
         if (use_single_predictor) {
+            std::fprintf(stderr, "[SZ3 debug] make_compressor_lorenzo_regression: using single predictor Lorenzo L=1\n");
             return make_compressor_sz_generic<T, N>(
                 make_decomposition_blockwise<T, N>(conf, LorenzoPredictor<T, N, 1>(conf.absErrorBound), quantizer),
                 encoder, lossless);
@@ -41,6 +43,7 @@ std::shared_ptr<concepts::CompressorInterface<T>> make_compressor_lorenzo_regres
     }
     if (conf.lorenzo2) {
         if (use_single_predictor) {
+            std::fprintf(stderr, "[SZ3 debug] make_compressor_lorenzo_regression: using single predictor Lorenzo L=2\n");
             return make_compressor_sz_generic<T, N>(
                 make_decomposition_blockwise<T, N>(conf, LorenzoPredictor<T, N, 2>(conf.absErrorBound), quantizer),
                 encoder, lossless);
@@ -50,6 +53,7 @@ std::shared_ptr<concepts::CompressorInterface<T>> make_compressor_lorenzo_regres
     }
     if (conf.regression) {
         if (use_single_predictor) {
+            std::fprintf(stderr, "[SZ3 debug] make_compressor_lorenzo_regression: using single predictor regression\n");
             return make_compressor_sz_generic<T, N>(
                 make_decomposition_blockwise<T, N>(conf, RegressionPredictor<T, N>(conf.blockSize, conf.absErrorBound),
                                                    quantizer),
