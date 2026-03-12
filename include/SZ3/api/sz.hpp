@@ -71,6 +71,8 @@ size_t SZ_compress(const SZ3::Config& config, const T* data, char* cmpData, size
         throw std::invalid_argument("Data dimension higher than 4 is not supported.");
     }
 
+    config.quant_inds_entropy = conf.quant_inds_entropy;
+
     // save compressed data size back in header
     write(cmpDataSize, sizeHeaderPos);
 

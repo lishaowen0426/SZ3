@@ -35,6 +35,7 @@ cdef extern from "SZ3/utils/Config.hpp" namespace "SZ3":
         double relErrorBound
         double psnrErrorBound
         double l2normErrorBound
+        double quant_inds_entropy
         bool openmp
 
 
@@ -55,4 +56,3 @@ cdef extern from "SZ3/api/sz.hpp":
                          const char *cmpData, 
                          size_t cmpSize, 
                          T *&decData) except +
-

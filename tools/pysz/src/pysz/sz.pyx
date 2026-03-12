@@ -128,6 +128,10 @@ cdef class szConfig:
     @l2normErrorBound.setter
     def l2normErrorBound(self, double value):
         self.conf.l2normErrorBound = value
+
+    @property
+    def quant_inds_entropy(self):
+        return self.conf.quant_inds_entropy
     
     # Enum properties (accept enum or int)
     @property

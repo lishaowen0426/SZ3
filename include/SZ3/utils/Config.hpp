@@ -176,6 +176,9 @@ class Config {
         return num;
     }
 
+    // Runtime statistic populated during compression when available.
+    mutable double quant_inds_entropy = 0.0;
+
     /**
      * @brief Load configuration from an INI file.
      *
@@ -473,7 +476,7 @@ class Config {
     uint8_t dataType = SZ_FLOAT;             ///< Data type (used in HDF5 filter)
     bool lorenzo = true;                     ///< Enable 1st order Lorenzo
     bool lorenzo2 = false;                   ///< Enable 2nd order Lorenzo
-    bool regression = true;                  ///< Enable 1st order regression
+    bool regression = false;                  ///< Enable 1st order regression
     bool regression2 = false;                ///< Enable 2nd order regression
     uint8_t interpAlgo = INTERP_ALGO_CUBIC;  ///< Interpolation algorithm. Saved/loaded in InterpolationDecomposition.
     uint8_t interpDirection = 0;             ///< Interpolation direction. Saved/loaded in InterpolationDecomposition.

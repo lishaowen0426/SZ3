@@ -1,7 +1,9 @@
 #ifndef SZ3_COMPRESSOR_TYPE_ONE_HPP
 #define SZ3_COMPRESSOR_TYPE_ONE_HPP
 
+#include <cmath>
 #include <cstring>
+#include <unordered_map>
 
 #include "SZ3/compressor/Compressor.hpp"
 #include "SZ3/decomposition/Decomposition.hpp"
@@ -37,6 +39,23 @@ class SZGenericCompressor : public concepts::CompressorInterface<T> {
 
     size_t compress(const Config &conf, T *data, uchar *cmpData, size_t cmpCap) override {
         std::vector<int> quant_inds = decomposition.compress(conf, data);
+        if (quant_inds.empty()) {
+            conf.quant_inds_entropy = 0.0;
+        } else {
+            std::unordered_map<int, size_t> counts;
+            counts.reserve(quant_inds.size());
+            for (const auto quant_ind : quant_inds) {
+                counts[quant_ind] += 1;
+            }
+
+            const double total_count = static_cast<double>(quant_inds.size());
+            double entropy = 0.0;
+            for (const auto &entry : counts) {
+                const double probability = static_cast<double>(entry.second) / total_count;
+                entropy -= probability * std::log2(probability);
+            }
+            conf.quant_inds_entropy = entropy;
+        }
 
         if (decomposition.get_out_range().first != 0) {
             throw std::runtime_error("The output range of the decomposition must start from 0 for this compressor");
