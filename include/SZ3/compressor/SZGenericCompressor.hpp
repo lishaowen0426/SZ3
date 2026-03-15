@@ -39,6 +39,7 @@ class SZGenericCompressor : public concepts::CompressorInterface<T> {
 
     size_t compress(const Config &conf, T *data, uchar *cmpData, size_t cmpCap) override {
         std::vector<int> quant_inds = decomposition.compress(conf, data);
+        /*
         if (quant_inds.empty()) {
             conf.quant_inds_entropy = 0.0;
         } else {
@@ -56,6 +57,7 @@ class SZGenericCompressor : public concepts::CompressorInterface<T> {
             }
             conf.quant_inds_entropy = entropy;
         }
+            */
 
         if (decomposition.get_out_range().first != 0) {
             throw std::runtime_error("The output range of the decomposition must start from 0 for this compressor");
