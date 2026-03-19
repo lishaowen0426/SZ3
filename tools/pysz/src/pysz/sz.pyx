@@ -49,6 +49,7 @@ cdef class szConfig:
     def __init__(self, *args):
         """Initialize config with optional dimensions."""
         self.conf = Config()
+        self._pred_idx_array = None
         if args:
             self.setDims(*args)
     
@@ -169,6 +170,28 @@ cdef class szConfig:
     @openmp.setter
     def openmp(self, bint value):
         self.conf.openmp = value
+
+    @property
+    def predIdx(self):
+        return self._pred_idx_array
+
+    @predIdx.setter
+    def predIdx(self, value):
+        cdef cnp.ndarray[cnp.int64_t, ndim=1] pred_idx_array
+        if value is None:
+            self._pred_idx_array = None
+            self.conf.predIdx = <const int64_t*>NULL
+            self.conf.predIdxSize = 0
+            return
+
+        pred_idx_array = np.ascontiguousarray(value, dtype=np.int64)
+        self._pred_idx_array = pred_idx_array
+        self.conf.predIdx = <const int64_t*>cnp.PyArray_DATA(pred_idx_array)
+        self.conf.predIdxSize = <size_t>pred_idx_array.size
+
+    @property
+    def predIdxSize(self):
+        return self.conf.predIdxSize
 
     def __repr__(self):
         return f"szConfig(dims={self.dims}, num_elements={self.num_elements})"

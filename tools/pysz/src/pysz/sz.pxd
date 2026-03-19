@@ -35,12 +35,19 @@ cdef extern from "SZ3/utils/Config.hpp" namespace "SZ3":
         double relErrorBound
         double psnrErrorBound
         double l2normErrorBound
+        int32_t quantbinCnt
+        int32_t blockSize
+        uint8_t predDim
+        const int64_t* predIdx
+        size_t predIdxSize
+        uint8_t dataType
         double quant_inds_entropy
         bool openmp
 
 
 cdef class szConfig:
     cdef Config conf
+    cdef object _pred_idx_array
 
 
 cdef extern from "SZ3/api/sz.hpp":

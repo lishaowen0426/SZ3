@@ -473,6 +473,8 @@ class Config {
     int quantbinCnt = 65536;                 ///< Maximum number of quantization intervals
     int blockSize = 0;                       ///< Block size for processing
     uint8_t predDim = 0;                     ///< Prediction dimension (currently unused)
+    const int64_t* predIdx = nullptr;        ///< Runtime-only predictor index stream; not serialized.
+    size_t predIdxSize = 0;                  ///< Number of entries in predIdx; runtime-only, not serialized.
     uint8_t dataType = SZ_FLOAT;             ///< Data type (used in HDF5 filter)
     bool lorenzo = true;                     ///< Enable 1st order Lorenzo
     bool lorenzo2 = false;                   ///< Enable 2nd order Lorenzo

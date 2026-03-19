@@ -11,6 +11,8 @@ class LorenzoPredictor : public concepts::PredictorInterface<T, N> {
    public:
     static const uint8_t predictor_id = 0b00000001;
     using block_iter = typename block_data<T, N>::block_iterator;
+    const int64_t *predIdx = nullptr;
+    size_t predIdxSize = 0;
 
     LorenzoPredictor() { this->noise = 0; }
 
@@ -60,6 +62,18 @@ class LorenzoPredictor : public concepts::PredictorInterface<T, N> {
     ALWAYS_INLINE T predict(const block_iter &block, T *d, const std::array<size_t, N> &index) override {
         auto ds = block.get_dim_strides();
         if constexpr (N == 1 && L == 1) {
+            if (predIdx != nullptr) {
+                auto block_range = block.get_block_range();
+                const size_t current_index = block_range[0].first + index[0];
+                if (current_index >= predIdxSize) {
+                    throw std::runtime_error("predIdxSize is smaller than the 1D data extent");
+                }
+                const int64_t previous_index = predIdx[current_index];
+                if (previous_index < 0) {
+                    return T(0);
+                }
+                return *(d + (previous_index - static_cast<int64_t>(current_index)));
+            }
             return prev1(d, 1);
         } else if constexpr (N == 2 && L == 1) {
             return prev2(d, ds, 0, 1) + prev2(d, ds, 1, 0) - prev2(d, ds, 1, 1);

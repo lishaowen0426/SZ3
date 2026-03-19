@@ -33,11 +33,20 @@ std::shared_ptr<concepts::CompressorInterface<T>> make_compressor_lorenzo_regres
     }
     if (conf.lorenzo) {
         if (use_single_predictor) {
+            auto predictor = LorenzoPredictor<T, N, 1>(conf.absErrorBound);
+            if (conf.predIdx != nullptr) {
+                predictor.predIdx = conf.predIdx;
+                predictor.predIdxSize = conf.predIdxSize;
+            }
             return make_compressor_sz_generic<T, N>(
-                make_decomposition_blockwise<T, N>(conf, LorenzoPredictor<T, N, 1>(conf.absErrorBound), quantizer),
-                encoder, lossless);
+                make_decomposition_blockwise<T, N>(conf, predictor, quantizer), encoder, lossless);
         } else {
-            predictors.push_back(std::make_shared<LorenzoPredictor<T, N, 1>>(conf.absErrorBound));
+            auto predictor = std::make_shared<LorenzoPredictor<T, N, 1>>(conf.absErrorBound);
+            if (conf.predIdx != nullptr) {
+                predictor->predIdx = conf.predIdx;
+                predictor->predIdxSize = conf.predIdxSize;
+            }
+            predictors.push_back(predictor);
         }
     }
     if (conf.lorenzo2) {
@@ -68,6 +77,8 @@ template <class T, uint N>
 size_t SZ_compress_LorenzoReg(Config &conf, T *data, uchar *cmpData, size_t cmpCap) {
     assert(N == conf.N);
     assert(conf.cmprAlgo == ALGO_LORENZO_REG);
+   
+
     calAbsErrorBound(conf, data);
 
     auto quantizer = LinearQuantizer<T>(conf.absErrorBound, conf.quantbinCnt / 2);
