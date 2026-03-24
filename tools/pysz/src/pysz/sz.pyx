@@ -50,6 +50,8 @@ cdef class szConfig:
         """Initialize config with optional dimensions."""
         self.conf = Config()
         self._pred_idx_array = None
+        self._anchor_idx_array = None
+        self._anchor_value_array = None
         if args:
             self.setDims(*args)
     
@@ -172,6 +174,22 @@ cdef class szConfig:
         self.conf.openmp = value
 
     @property
+    def useGrandparentPredictor(self):
+        return self.conf.useGrandparentPredictor
+
+    @useGrandparentPredictor.setter
+    def useGrandparentPredictor(self, bint value):
+        self.conf.useGrandparentPredictor = value
+
+    @property
+    def grandparentPredictorRatio(self):
+        return self.conf.grandparentPredictorRatio
+
+    @grandparentPredictorRatio.setter
+    def grandparentPredictorRatio(self, double value):
+        self.conf.grandparentPredictorRatio = value
+
+    @property
     def predIdx(self):
         return self._pred_idx_array
 
@@ -192,6 +210,50 @@ cdef class szConfig:
     @property
     def predIdxSize(self):
         return self.conf.predIdxSize
+
+    @property
+    def anchorIdx(self):
+        return self._anchor_idx_array
+
+    @anchorIdx.setter
+    def anchorIdx(self, value):
+        cdef cnp.ndarray[cnp.int64_t, ndim=1] anchor_idx_array
+        if value is None:
+            self._anchor_idx_array = None
+            self.conf.anchorIdx = <const int64_t*>NULL
+            self.conf.anchorIdxSize = 0
+            return
+
+        anchor_idx_array = np.ascontiguousarray(value, dtype=np.int64)
+        self._anchor_idx_array = anchor_idx_array
+        self.conf.anchorIdx = <const int64_t*>cnp.PyArray_DATA(anchor_idx_array)
+        self.conf.anchorIdxSize = <size_t>anchor_idx_array.size
+
+    @property
+    def anchorIdxSize(self):
+        return self.conf.anchorIdxSize
+
+    @property
+    def anchorValue(self):
+        return self._anchor_value_array
+
+    @anchorValue.setter
+    def anchorValue(self, value):
+        cdef cnp.ndarray[cnp.double_t, ndim=1] anchor_value_array
+        if value is None:
+            self._anchor_value_array = None
+            self.conf.anchorValue = <const double*>NULL
+            self.conf.anchorValueSize = 0
+            return
+
+        anchor_value_array = np.ascontiguousarray(value, dtype=np.float64)
+        self._anchor_value_array = anchor_value_array
+        self.conf.anchorValue = <const double*>cnp.PyArray_DATA(anchor_value_array)
+        self.conf.anchorValueSize = <size_t>anchor_value_array.size
+
+    @property
+    def anchorValueSize(self):
+        return self.conf.anchorValueSize
 
     def __repr__(self):
         return f"szConfig(dims={self.dims}, num_elements={self.num_elements})"

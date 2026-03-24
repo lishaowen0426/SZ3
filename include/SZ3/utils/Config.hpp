@@ -473,8 +473,14 @@ class Config {
     int quantbinCnt = 65536;                 ///< Maximum number of quantization intervals
     int blockSize = 0;                       ///< Block size for processing
     uint8_t predDim = 0;                     ///< Prediction dimension (currently unused)
+    bool useGrandparentPredictor = false;    ///< Runtime-only flag to enable grandparent-aware prediction logic.
+    double grandparentPredictorRatio = 0.9;  ///< Runtime-only convex-combination weight on the parent value.
     const int64_t* predIdx = nullptr;        ///< Runtime-only predictor index stream; not serialized.
     size_t predIdxSize = 0;                  ///< Number of entries in predIdx; runtime-only, not serialized.
+    const int64_t* anchorIdx = nullptr;      ///< Runtime-only anchor locations for special predictor roots.
+    size_t anchorIdxSize = 0;                ///< Number of entries in anchorIdx; runtime-only, not serialized.
+    const double* anchorValue = nullptr;     ///< Runtime-only anchor values paired with anchorIdx.
+    size_t anchorValueSize = 0;              ///< Number of entries in anchorValue; runtime-only, not serialized.
     uint8_t dataType = SZ_FLOAT;             ///< Data type (used in HDF5 filter)
     bool lorenzo = true;                     ///< Enable 1st order Lorenzo
     bool lorenzo2 = false;                   ///< Enable 2nd order Lorenzo

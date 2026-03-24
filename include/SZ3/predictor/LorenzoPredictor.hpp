@@ -11,8 +11,14 @@ class LorenzoPredictor : public concepts::PredictorInterface<T, N> {
    public:
     static const uint8_t predictor_id = 0b00000001;
     using block_iter = typename block_data<T, N>::block_iterator;
+    bool useGrandparentPredictor = false;
+    double grandparentPredictorRatio = 0.9;
     const int64_t *predIdx = nullptr;
     size_t predIdxSize = 0;
+    const int64_t *anchorIdx = nullptr;
+    size_t anchorIdxSize = 0;
+    const double *anchorValue = nullptr;
+    size_t anchorValueSize = 0;
 
     LorenzoPredictor() { this->noise = 0; }
 
@@ -68,11 +74,50 @@ class LorenzoPredictor : public concepts::PredictorInterface<T, N> {
                 if (current_index >= predIdxSize) {
                     throw std::runtime_error("predIdxSize is smaller than the 1D data extent");
                 }
+                auto lookup_anchor_value = [&](size_t target_index, T &value) -> bool {
+                    if (anchorIdx != nullptr || anchorValue != nullptr) {
+                        if (anchorIdx == nullptr || anchorValue == nullptr || anchorIdxSize != anchorValueSize) {
+                            throw std::runtime_error("anchor arrays are not configured consistently");
+                        }
+                        for (size_t anchor_pos = 0; anchor_pos < anchorIdxSize; anchor_pos++) {
+                            if (anchorIdx[anchor_pos] == static_cast<int64_t>(target_index)) {
+                                value = static_cast<T>(anchorValue[anchor_pos]);
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                };
+                auto lookup_stream_value = [&](size_t target_index) -> T {
+                    T value;
+                    if (lookup_anchor_value(target_index, value)) {
+                        return value;
+                    }
+                    return *(d + (static_cast<int64_t>(target_index) - static_cast<int64_t>(current_index)));
+                };
                 const int64_t previous_index = predIdx[current_index];
                 if (previous_index < 0) {
+                    T anchor_value;
+                    if (lookup_anchor_value(current_index, anchor_value)) {
+                        return anchor_value;
+                    }
                     return T(0);
                 }
-                return *(d + (previous_index - static_cast<int64_t>(current_index)));
+                const T parent_value = lookup_stream_value(static_cast<size_t>(previous_index));
+                if (!useGrandparentPredictor) {
+                    return parent_value;
+                }
+                if (static_cast<size_t>(previous_index) >= predIdxSize) {
+                    throw std::runtime_error("predIdx contains an out-of-range parent index");
+                }
+                const int64_t grandparent_index = predIdx[static_cast<size_t>(previous_index)];
+                if (grandparent_index < 0) {
+                    return parent_value;
+                }
+                const T grandparent_value = lookup_stream_value(static_cast<size_t>(grandparent_index));
+                const T parent_ratio = static_cast<T>(grandparentPredictorRatio);
+                const T grandparent_ratio = static_cast<T>(1.0 - grandparentPredictorRatio);
+                return parent_ratio * parent_value + grandparent_ratio * grandparent_value;
             }
             return prev1(d, 1);
         } else if constexpr (N == 2 && L == 1) {

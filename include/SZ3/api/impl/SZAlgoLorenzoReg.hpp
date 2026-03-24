@@ -34,17 +34,33 @@ std::shared_ptr<concepts::CompressorInterface<T>> make_compressor_lorenzo_regres
     if (conf.lorenzo) {
         if (use_single_predictor) {
             auto predictor = LorenzoPredictor<T, N, 1>(conf.absErrorBound);
+            predictor.useGrandparentPredictor = conf.useGrandparentPredictor;
+            predictor.grandparentPredictorRatio = conf.grandparentPredictorRatio;
             if (conf.predIdx != nullptr) {
                 predictor.predIdx = conf.predIdx;
                 predictor.predIdxSize = conf.predIdxSize;
+            }
+            if (conf.anchorIdx != nullptr || conf.anchorValue != nullptr) {
+                predictor.anchorIdx = conf.anchorIdx;
+                predictor.anchorIdxSize = conf.anchorIdxSize;
+                predictor.anchorValue = conf.anchorValue;
+                predictor.anchorValueSize = conf.anchorValueSize;
             }
             return make_compressor_sz_generic<T, N>(
                 make_decomposition_blockwise<T, N>(conf, predictor, quantizer), encoder, lossless);
         } else {
             auto predictor = std::make_shared<LorenzoPredictor<T, N, 1>>(conf.absErrorBound);
+            predictor->useGrandparentPredictor = conf.useGrandparentPredictor;
+            predictor->grandparentPredictorRatio = conf.grandparentPredictorRatio;
             if (conf.predIdx != nullptr) {
                 predictor->predIdx = conf.predIdx;
                 predictor->predIdxSize = conf.predIdxSize;
+            }
+            if (conf.anchorIdx != nullptr || conf.anchorValue != nullptr) {
+                predictor->anchorIdx = conf.anchorIdx;
+                predictor->anchorIdxSize = conf.anchorIdxSize;
+                predictor->anchorValue = conf.anchorValue;
+                predictor->anchorValueSize = conf.anchorValueSize;
             }
             predictors.push_back(predictor);
         }

@@ -38,8 +38,14 @@ cdef extern from "SZ3/utils/Config.hpp" namespace "SZ3":
         int32_t quantbinCnt
         int32_t blockSize
         uint8_t predDim
+        bool useGrandparentPredictor
+        double grandparentPredictorRatio
         const int64_t* predIdx
         size_t predIdxSize
+        const int64_t* anchorIdx
+        size_t anchorIdxSize
+        const double* anchorValue
+        size_t anchorValueSize
         uint8_t dataType
         double quant_inds_entropy
         bool openmp
@@ -48,6 +54,8 @@ cdef extern from "SZ3/utils/Config.hpp" namespace "SZ3":
 cdef class szConfig:
     cdef Config conf
     cdef object _pred_idx_array
+    cdef object _anchor_idx_array
+    cdef object _anchor_value_array
 
 
 cdef extern from "SZ3/api/sz.hpp":
