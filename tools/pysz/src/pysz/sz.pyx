@@ -52,6 +52,7 @@ cdef class szConfig:
         self._pred_idx_array = None
         self._anchor_idx_array = None
         self._anchor_value_array = None
+        self._block_sizes_array = None
         if args:
             self.setDims(*args)
     
@@ -188,6 +189,43 @@ cdef class szConfig:
     @grandparentPredictorRatio.setter
     def grandparentPredictorRatio(self, double value):
         self.conf.grandparentPredictorRatio = value
+
+    @property
+    def blockSizes(self):
+        return tuple(self.conf.blockSizes)
+
+    @blockSizes.setter
+    def blockSizes(self, value):
+        cdef vector[size_t] block_sizes
+        if value is None:
+            self._block_sizes_array = None
+            self.conf.blockSizes.clear()
+            return
+
+        block_sizes_iter = tuple(value)
+        for entry in block_sizes_iter:
+            if not isinstance(entry, int) or entry <= 0:
+                raise ValueError(f"Block size must be a positive integer, got {entry}")
+            block_sizes.push_back(<size_t>entry)
+        self._block_sizes_array = block_sizes_iter
+        self.conf.blockSizes = block_sizes
+
+    @property
+    def quantIndsPath(self):
+        if self.conf.quantIndsPath.empty():
+            return None
+        return (<bytes>self.conf.quantIndsPath).decode('utf-8')
+
+    @quantIndsPath.setter
+    def quantIndsPath(self, value):
+        cdef string quant_inds_path
+        if value is None:
+            self.conf.quantIndsPath = string()
+            return
+        if not isinstance(value, str):
+            raise TypeError(f"Expected str or None, got {type(value).__name__}")
+        quant_inds_path = value.encode('utf-8')
+        self.conf.quantIndsPath = quant_inds_path
 
     @property
     def predIdx(self):

@@ -37,6 +37,8 @@ cdef extern from "SZ3/utils/Config.hpp" namespace "SZ3":
         double l2normErrorBound
         int32_t quantbinCnt
         int32_t blockSize
+        vector[size_t] blockSizes
+        string quantIndsPath
         uint8_t predDim
         bool useGrandparentPredictor
         double grandparentPredictorRatio
@@ -56,6 +58,7 @@ cdef class szConfig:
     cdef object _pred_idx_array
     cdef object _anchor_idx_array
     cdef object _anchor_value_array
+    cdef object _block_sizes_array
 
 
 cdef extern from "SZ3/api/sz.hpp":

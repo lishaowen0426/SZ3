@@ -2,6 +2,7 @@
 #define SZ3_BLOCKWISE_DECOMPOSITION_HPP
 
 #include <cstring>
+#include <fstream>
 
 #include "Decomposition.hpp"
 #include "SZ3/def.hpp"
@@ -28,9 +29,19 @@ class BlockwiseDecomposition : public concepts::DecompositionInterface<T, int, N
     std::vector<int> compress(const Config &conf, T *data) override {
         auto data_with_padding = std::make_shared<block_data<T, N>>(data, conf.dims, predictor.get_padding(), true);
         auto block = data_with_padding->block_iter(conf.blockSize);
+        std::ofstream quant_inds_stream;
+        const bool dump_quant_inds = !conf.quantIndsPath.empty();
+        bool wrote_block = false;
+        if (dump_quant_inds) {
+            quant_inds_stream.open(conf.quantIndsPath, std::ios::out | std::ios::trunc);
+            if (!quant_inds_stream) {
+                throw std::runtime_error("failed to open quantization-index output file: " + conf.quantIndsPath);
+            }
+        }
         std::vector<int> quant_inds;
         quant_inds.reserve(conf.num);
         do {
+            const size_t block_begin = quant_inds.size();
             concepts::PredictorInterface<T, N> *predictor_withfallback = &predictor;
             if (!predictor.precompress(block)) {
                 predictor_withfallback = &fallback_predictor;
@@ -40,6 +51,18 @@ class BlockwiseDecomposition : public concepts::DecompositionInterface<T, int, N
                 T pred = predictor_withfallback->predict(block, c, index);
                 quant_inds.push_back(quantizer.quantize_and_overwrite(*c, pred));
             });
+            if (dump_quant_inds) {
+                if (wrote_block) {
+                    quant_inds_stream << '\n';
+                }
+                for (size_t i = block_begin; i < quant_inds.size(); i++) {
+                    if (i > block_begin) {
+                        quant_inds_stream << ' ';
+                    }
+                    quant_inds_stream << quant_inds[i];
+                }
+                wrote_block = true;
+            }
 
         } while (block.next());
         return quant_inds;

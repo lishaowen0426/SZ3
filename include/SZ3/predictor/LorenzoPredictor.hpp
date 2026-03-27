@@ -47,9 +47,15 @@ class LorenzoPredictor : public concepts::PredictorInterface<T, N> {
 
     bool precompress(const block_iter &) override { return true; }
 
+    template <class BlockLike>
+    bool precompress(const BlockLike &) { return true; }
+
     void precompress_block_commit() noexcept override {}
 
     bool predecompress(const block_iter &) override { return true; }
+
+    template <class BlockLike>
+    bool predecompress(const BlockLike &) { return true; }
 
     void save(uchar *&c) override {}
 
@@ -62,10 +68,31 @@ class LorenzoPredictor : public concepts::PredictorInterface<T, N> {
     size_t get_padding() override { return 2; }
 
     ALWAYS_INLINE T estimate_error(const block_iter &block, T *d, const std::array<size_t, N> &index) override {
-        return fabs(*d - predict(block, d, index)) + this->noise;
+        return estimate_error_impl(block, d, index);
+    }
+
+    template <class BlockLike>
+    ALWAYS_INLINE T estimate_error(const BlockLike &block, T *d, const std::array<size_t, N> &index) {
+        return estimate_error_impl(block, d, index);
     }
 
     ALWAYS_INLINE T predict(const block_iter &block, T *d, const std::array<size_t, N> &index) override {
+        return predict_impl(block, d, index);
+    }
+
+    template <class BlockLike>
+    ALWAYS_INLINE T predict(const BlockLike &block, T *d, const std::array<size_t, N> &index) {
+        return predict_impl(block, d, index);
+    }
+
+   protected:
+    template <class BlockLike>
+    ALWAYS_INLINE T estimate_error_impl(const BlockLike &block, T *d, const std::array<size_t, N> &index) {
+        return fabs(*d - predict_impl(block, d, index)) + this->noise;
+    }
+
+    template <class BlockLike>
+    ALWAYS_INLINE T predict_impl(const BlockLike &block, T *d, const std::array<size_t, N> &index) {
         auto ds = block.get_dim_strides();
         if constexpr (N == 1 && L == 1) {
             if (predIdx != nullptr) {

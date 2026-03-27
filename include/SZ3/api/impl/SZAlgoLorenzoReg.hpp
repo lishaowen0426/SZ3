@@ -7,6 +7,7 @@
 
 #include "SZ3/compressor/SZGenericCompressor.hpp"
 #include "SZ3/decomposition/BlockwiseDecomposition.hpp"
+#include "SZ3/decomposition/BFSBlockwiseDecomposition.hpp"
 #include "SZ3/def.hpp"
 #include "SZ3/lossless/Lossless_zstd.hpp"
 #include "SZ3/predictor/ComposedPredictor.hpp"
@@ -46,6 +47,10 @@ std::shared_ptr<concepts::CompressorInterface<T>> make_compressor_lorenzo_regres
                 predictor.anchorValue = conf.anchorValue;
                 predictor.anchorValueSize = conf.anchorValueSize;
             }
+            if (!conf.blockSizes.empty()) {
+                return make_compressor_sz_generic<T, N>(
+                    make_decomposition_bfs_blockwise<T, N>(conf, predictor, quantizer), encoder, lossless);
+            }
             return make_compressor_sz_generic<T, N>(
                 make_decomposition_blockwise<T, N>(conf, predictor, quantizer), encoder, lossless);
         } else {
@@ -67,6 +72,12 @@ std::shared_ptr<concepts::CompressorInterface<T>> make_compressor_lorenzo_regres
     }
     if (conf.lorenzo2) {
         if (use_single_predictor) {
+            if (!conf.blockSizes.empty()) {
+                return make_compressor_sz_generic<T, N>(
+                    make_decomposition_bfs_blockwise<T, N>(conf, LorenzoPredictor<T, N, 2>(conf.absErrorBound),
+                                                           quantizer),
+                    encoder, lossless);
+            }
             return make_compressor_sz_generic<T, N>(
                 make_decomposition_blockwise<T, N>(conf, LorenzoPredictor<T, N, 2>(conf.absErrorBound), quantizer),
                 encoder, lossless);

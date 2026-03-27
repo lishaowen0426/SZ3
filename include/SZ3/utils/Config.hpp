@@ -17,6 +17,7 @@
 #include <iostream>
 #include <map>
 #include <numeric>
+#include <string>
 #include <vector>
 
 #include "SZ3/def.hpp"
@@ -472,6 +473,8 @@ class Config {
      */
     int quantbinCnt = 65536;                 ///< Maximum number of quantization intervals
     int blockSize = 0;                       ///< Block size for processing
+    std::vector<size_t> blockSizes;          ///< Runtime-only per-block sizes for 1D blockwise iteration.
+    std::string quantIndsPath;            ///< Runtime-only path for dumping quantization indices; empty means disabled.
     uint8_t predDim = 0;                     ///< Prediction dimension (currently unused)
     bool useGrandparentPredictor = false;    ///< Runtime-only flag to enable grandparent-aware prediction logic.
     double grandparentPredictorRatio = 0.9;  ///< Runtime-only convex-combination weight on the parent value.
