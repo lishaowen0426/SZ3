@@ -293,6 +293,46 @@ cdef class szConfig:
     def anchorValueSize(self):
         return self.conf.anchorValueSize
 
+    @property
+    def interpAnchorStride(self):
+        return self.conf.interpAnchorStride
+
+    @interpAnchorStride.setter
+    def interpAnchorStride(self, int value):
+        self.conf.interpAnchorStride = value
+
+    @property
+    def lorenzo(self):
+        return self.conf.lorenzo
+
+    @lorenzo.setter
+    def lorenzo(self, bint value):
+        self.conf.lorenzo = value
+
+    @property
+    def lorenzo2(self):
+        return self.conf.lorenzo2
+
+    @lorenzo2.setter
+    def lorenzo2(self, bint value):
+        self.conf.lorenzo2 = value
+
+    @property
+    def regression(self):
+        return self.conf.regression
+
+    @regression.setter
+    def regression(self, bint value):
+        self.conf.regression = value
+
+    @property
+    def regression2(self):
+        return self.conf.regression2
+
+    @regression2.setter
+    def regression2(self, bint value):
+        self.conf.regression2 = value
+
     def __repr__(self):
         return f"szConfig(dims={self.dims}, num_elements={self.num_elements})"
 

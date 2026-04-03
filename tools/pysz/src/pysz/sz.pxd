@@ -51,6 +51,11 @@ cdef extern from "SZ3/utils/Config.hpp" namespace "SZ3":
         uint8_t dataType
         double quant_inds_entropy
         bool openmp
+        int interpAnchorStride
+        bool lorenzo
+        bool lorenzo2
+        bool regression
+        bool regression2
 
 
 cdef class szConfig:
