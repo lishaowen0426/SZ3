@@ -39,6 +39,8 @@ size_t SZ_compress_dispatcher(Config &conf, const T *data, uchar *cmpData, size_
                 return SZ_compress_bioMD<T, N>(conf, dataCopy.data(), cmpData, cmpCap);
             } else if (conf.cmprAlgo == ALGO_BIOMDXTC) {
                 return SZ_compress_bioMDXtcBased<T, N>(conf, dataCopy.data(), cmpData, cmpCap);
+            } else if (conf.cmprAlgo == ALGO_SPLINE_INTERP) {
+                cmpSize = SZ_compress_Spline<T, N>(conf, dataCopy.data(), cmpData, cmpCap);
             } else {
                 throw std::invalid_argument("Unknown compression algorithm");
             }
@@ -107,6 +109,8 @@ void SZ_decompress_dispatcher(Config &conf, const uchar *cmpData, size_t cmpSize
         SZ_decompress_bioMD<T, N>(conf, cmpData, cmpSize, decData);
     } else if (conf.cmprAlgo == ALGO_BIOMDXTC) {
         SZ_decompress_bioMDXtcBased<T, N>(conf, cmpData, cmpSize, decData);
+    } else if (conf.cmprAlgo == ALGO_SPLINE_INTERP) {
+        SZ_decompress_Spline<T, N>(conf, cmpData, cmpSize, decData);
     } else {
         throw std::invalid_argument("Unknown compression algorithm");
     }

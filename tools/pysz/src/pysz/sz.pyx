@@ -34,6 +34,7 @@ class szAlgorithm:
     INTERP = 2
     NOPRED = 3
     LOSSLESS = 4
+    SPLINE_INTERP = 7
 
 
 cdef class szConfig:
@@ -393,8 +394,10 @@ cdef class sz:
         cdef void* data_ptr = <void*> cnp.PyArray_DATA(data)
         cdef size_t original_size = data.nbytes
         
-        # Allocate buffer for compressed data (2x original size to be safe)
-        cdef size_t buffer_size = <size_t>(original_size * 2)
+        # Allocate buffer for compressed data. SZ_compress requires at least
+        # 4096 + conf.size_est() + ZSTD_compressBound(n*sizeof(T)) bytes, so
+        # add an 8192-byte headroom on top of the 2x allocation.
+        cdef size_t buffer_size = <size_t>(original_size * 2 + 8192)
         cdef cnp.ndarray[cnp.uint8_t, ndim=1] compressed = np.empty(buffer_size, dtype=np.uint8)
         cdef char* compressed_ptr = <char*> cnp.PyArray_DATA(compressed)
         cdef size_t compressed_size = 0

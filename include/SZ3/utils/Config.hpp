@@ -65,8 +65,9 @@ enum EB { EB_ABS, EB_REL, EB_PSNR, EB_L2NORM, EB_ABS_AND_REL, EB_ABS_OR_REL };
  * - ALGO_LOSSLESS: Lossless compression.
  * - ALGO_BIOMD: data compression algorithm for biology molecular data.
  * - ALGO_BIOMDXTC: The XTC data compression algorithm in GROMACS for biology molecular data.
+ * - ALGO_SPLINE_INTERP: 1D-only natural cubic spline interpolation decomposition.
  */
-enum ALGO { ALGO_LORENZO_REG, ALGO_INTERP_LORENZO, ALGO_INTERP, ALGO_NOPRED, ALGO_LOSSLESS, ALGO_BIOMD, ALGO_BIOMDXTC };
+enum ALGO { ALGO_LORENZO_REG, ALGO_INTERP_LORENZO, ALGO_INTERP, ALGO_NOPRED, ALGO_LOSSLESS, ALGO_BIOMD, ALGO_BIOMDXTC, ALGO_SPLINE_INTERP };
 
 /**
  * @enum INTERP_ALGO
@@ -81,7 +82,7 @@ const std::map<std::string, ALGO> ALGO_MAP = {
     {"ALGO_LORENZO_REG", ALGO_LORENZO_REG}, {"ALGO_INTERP_LORENZO", ALGO_INTERP_LORENZO},
     {"ALGO_INTERP", ALGO_INTERP},           {"ALGO_NOPRED", ALGO_NOPRED},
     {"ALGO_LOSSLESS", ALGO_LOSSLESS},       {"ALGO_BIOMD", ALGO_BIOMD},
-    {"ALGO_BIOMDXTC", ALGO_BIOMDXTC},
+    {"ALGO_BIOMDXTC", ALGO_BIOMDXTC},       {"ALGO_SPLINE_INTERP", ALGO_SPLINE_INTERP},
 };
 
 const std::map<std::string, EB> EB_MAP = {

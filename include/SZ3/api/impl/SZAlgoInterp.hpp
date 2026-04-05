@@ -4,6 +4,7 @@
 #include "SZ3/api/impl/SZAlgoLorenzoReg.hpp"
 #include "SZ3/decomposition/BlockwiseDecomposition.hpp"
 #include "SZ3/decomposition/InterpolationDecomposition.hpp"
+#include "SZ3/decomposition/SplineInterpolationDecomposition.hpp"
 #include "SZ3/lossless/Lossless_zstd.hpp"
 #include "SZ3/quantizer/LinearQuantizer.hpp"
 #include "SZ3/utils/Config.hpp"
@@ -284,5 +285,31 @@ size_t SZ_compress_Interp_lorenzo(Config &conf, T *data, uchar *cmpData, size_t 
     free(buffer);
     return cmpSize;
 }
+template <class T, uint N>
+size_t SZ_compress_Spline(Config &conf, T *data, uchar *cmpData, size_t cmpCap) {
+    assert(N == conf.N);
+    assert(conf.cmprAlgo == ALGO_SPLINE_INTERP);
+    if (N != 1) throw std::invalid_argument("SplineInterpolationDecomposition only supports 1D data");
+    calAbsErrorBound(conf, data);
+    if (conf.interpAnchorStride < 0) {
+        conf.interpAnchorStride = 4096;
+    }
+    auto sz = make_compressor_sz_generic<T, 1>(
+        make_decomposition_spline_interpolation<T>(conf, LinearQuantizer<T>(conf.absErrorBound, conf.quantbinCnt / 2)),
+        HuffmanEncoder<int>(), Lossless_zstd());
+    return sz->compress(conf, data, cmpData, cmpCap);
+}
+
+template <class T, uint N>
+void SZ_decompress_Spline(const Config &conf, const uchar *cmpData, size_t cmpSize, T *decData) {
+    assert(conf.cmprAlgo == ALGO_SPLINE_INTERP);
+    if (N != 1) throw std::invalid_argument("SplineInterpolationDecomposition only supports 1D data");
+    auto cmpDataPos = cmpData;
+    auto sz = make_compressor_sz_generic<T, 1>(
+        make_decomposition_spline_interpolation<T>(conf, LinearQuantizer<T>(conf.absErrorBound, conf.quantbinCnt / 2)),
+        HuffmanEncoder<int>(), Lossless_zstd());
+    sz->decompress(conf, cmpDataPos, cmpSize, decData);
+}
+
 }  // namespace SZ3
 #endif
