@@ -33,7 +33,6 @@ size_t SZ_compress_OMP(Config& conf, const T* data, uchar* cmpData, size_t cmpCa
         nThreads = static_cast<int>(conf.dims[0]);
         omp_set_num_threads(nThreads);
     }
-    printf("OpenMP enabled for compression, threads = %d\n", nThreads);
     compressed_t.resize(nThreads);
     cmp_size_t.resize(nThreads + 1);
     cmp_start_t.resize(nThreads + 1);
